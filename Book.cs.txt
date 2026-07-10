@@ -1,0 +1,22 @@
+
+    using System;
+
+    public class Book
+    {
+        public string isbn;
+        public string title;
+        public int year;
+        public double price;
+        public bool availability;
+        public string borrower;
+
+        public Book(string bookIsbn, string bookTitle, int bookYear, double bookPrice, bool bookAvailability, string bookBorrower)
+        {
+            isbn = bookIsbn;
+            title = bookTitle;
+            year = bookYear;
+            price = bookPrice;
+            availability = bookAvailability;
+            borrower = bookBorrower;
+        }
+    }
