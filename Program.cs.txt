@@ -37,7 +37,7 @@ while (true)
     }
     else if (choice == "6")
     {
-        Console.WriteLine("Изход от програмата. Успех с дипломната работа!");
+        Console.WriteLine("Изход от програмата!");
         break;
     }
     else
