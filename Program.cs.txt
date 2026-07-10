@@ -1,0 +1,219 @@
+string fileName = "books.txt";
+
+List<Book> library = LoadBooksFromFile();
+
+while (true)
+{
+    Console.WriteLine("\n--- МЕНЮ БИБЛИОТЕКА ---");
+    Console.WriteLine("1. Добавяне на нова книга");
+    Console.WriteLine("2. Заемане на книга");
+    Console.WriteLine("3. Връщане на книга");
+    Console.WriteLine("4. Справка за налични книги");
+    Console.WriteLine("5. Справка за заети книги");
+    Console.WriteLine("6. Изход");
+    Console.Write("Изберете опция (1-6): ");
+
+    string choice = Console.ReadLine();
+
+    if (choice == "1")
+    {
+        AddBook(library);
+    }
+    else if (choice == "2")
+    {
+        BorrowBook(library);
+    }
+    else if (choice == "3")
+    {
+        ReturnBook(library);
+    }
+    else if (choice == "4")
+    {
+        PrintAvailableBooks(library);
+    }
+    else if (choice == "5")
+    {
+        PrintBorrowedBooks(library);
+    }
+    else if (choice == "6")
+    {
+        Console.WriteLine("Изход от програмата. Успех с дипломната работа!");
+        break;
+    }
+    else
+    {
+        Console.WriteLine("Невалиден избор! Моля, опитайте отново.");
+    }
+}
+
+List<Book> LoadBooksFromFile()
+{
+    List<Book> list = new List<Book>();
+
+    if (!File.Exists(fileName))
+    {
+        
+        File.Create(fileName).Close();
+        return list;
+    }
+
+    string[] lines = File.ReadAllLines(fileName);
+    foreach (string line in lines)
+    {
+        if (line.Trim() == "") continue;
+
+        string[] parts = line.Split('|');
+        if (parts.Length == 6)
+        {
+            string isbn = parts[0];
+            string title = parts[1];
+            int year = int.Parse(parts[2]);
+            double price = double.Parse(parts[3]);
+            bool availability = bool.Parse(parts[4]);
+            string borrower = parts[5];
+
+            Book b = new Book(isbn, title, year, price, availability, borrower);
+            list.Add(b);
+        }
+    }
+    return list;
+}
+
+
+void SaveBooksToFile(List<Book> list)
+{
+    List<string> lines = new List<string>();
+    foreach (Book b in list)
+    {
+        string line = b.isbn + "|" + b.title + "|" + b.year + "|" + b.price + "|" + b.availability + "|" + b.borrower;
+        lines.Add(line);
+    }
+    File.WriteAllLines(fileName, lines);
+}
+
+
+void AddBook(List<Book> list)
+{
+    Console.WriteLine("\n--- ДОБАВЯНЕ НА КНИГА ---");
+    Console.Write("Въведете ISBN: ");
+    string isbn = Console.ReadLine();
+    Console.Write("Въведете заглавие: ");
+    string title = Console.ReadLine();
+    Console.Write("Въведете година: ");
+    int year = int.Parse(Console.ReadLine());
+    Console.Write("Въведете цена: ");
+    double price = double.Parse(Console.ReadLine());
+
+  
+    Book newBook = new Book(isbn, title, year, price, true, "None");
+    list.Add(newBook);
+
+    SaveBooksToFile(list);
+    Console.WriteLine("Книгата беше добавена успешно и файлът е обновен!");
+}
+
+
+void BorrowBook(List<Book> list)
+{
+    Console.WriteLine("\n--- ЗАЕМАНЕ НА КНИГА ---");
+    Console.Write("Въведете ISBN на книгата, която искате да заемете: ");
+    string searchIsbn = Console.ReadLine();
+
+    Book foundBook = null;
+    foreach (Book b in list)
+    {
+        if (b.isbn == searchIsbn && b.availability == true)
+        {
+            foundBook = b;
+            break;
+        }
+    }
+
+    if (foundBook != null)
+    {
+        Console.Write("Въведете име на заемателя: ");
+        string borrowerName = Console.ReadLine();
+
+        foundBook.availability = false;
+        foundBook.borrower = borrowerName;
+
+        SaveBooksToFile(list);
+        Console.WriteLine("Книгата '" + foundBook.title + "' беше заето успешно от " + borrowerName + "!");
+    }
+    else
+    {
+        Console.WriteLine("Книгата не е намерена или в момента е заета.");
+    }
+}
+
+
+void ReturnBook(List<Book> list)
+{
+    Console.WriteLine("\n--- ВРЪЩАНЕ НА КНИГА ---");
+    Console.Write("Въведете ISBN на връщаната книга: ");
+    string searchIsbn = Console.ReadLine();
+
+    Book foundBook = null;
+    foreach (Book b in list)
+    {
+        if (b.isbn == searchIsbn && b.availability == false)
+        {
+            foundBook = b;
+            break;
+        }
+    }
+
+    if (foundBook != null)
+    {
+        foundBook.availability = true;
+        foundBook.borrower = "None";
+
+        SaveBooksToFile(list);
+        Console.WriteLine("Книгата '" + foundBook.title + "' беше върната успешно в библиотеката!");
+    }
+    else
+    {
+        Console.WriteLine("Книгата не е намерена сред заетите книги.");
+    }
+}
+
+
+void PrintAvailableBooks(List<Book> list)
+{
+    Console.WriteLine("\n--- НАЛИЧНИ КНИГИ В БИБЛИОТЕКАТА ---");
+    int count = 0;
+
+    foreach (Book b in list)
+    {
+        if (b.availability == true)
+        {
+            Console.WriteLine("ISBN: " + b.isbn + " | Заглавие: " + b.title + " | Година: " + b.year + " | Цена: " + b.price + " лв.");
+            count++;
+        }
+    }
+
+    if (count == 0)
+    {
+        Console.WriteLine("Няма налични книги в момента.");
+    }
+}
+
+void PrintBorrowedBooks(List<Book> list)
+{
+    Console.WriteLine("\n--- ЗАЕТИ КНИГИ И ЧИТАТЕЛИ ---");
+    int count = 0;
+
+    foreach (Book b in list)
+    {
+        if (b.availability == false)
+        {
+            Console.WriteLine("ISBN: " + b.isbn + " | Заглавие: " + b.title + " | Заета от: " + b.borrower);
+            count++;
+        }
+    }
+
+    if (count == 0)
+    {
+        Console.WriteLine("Няма заети книги в момента.");
+    }
+}
